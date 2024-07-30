@@ -1,3 +1,6 @@
+using Microsoft.OpenApi.Models;
+using ReadReceipt.Services;
+
 namespace ReadReceipt
 {
     public class Program
@@ -9,7 +12,12 @@ namespace ReadReceipt
             // Add services to the container.
 
             builder.Services.AddControllers();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ReadReceipt", Version = "v1" });
+            });
+
+            builder.Services.AddSingleton<IReceiptReaderService, ReceiptReaderService>();
 
 
             var app = builder.Build();
@@ -17,7 +25,7 @@ namespace ReadReceipt
             // Configure the HTTP request pipeline.
 
             app.UseAuthorization();
-            // Configure the HTTP request pipeline.
+
             app.UseSwagger();
             app.UseSwaggerUI();
 

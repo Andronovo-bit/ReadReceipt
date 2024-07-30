@@ -1,61 +1,39 @@
 using Microsoft.AspNetCore.Mvc;
+using ReadReceipt.Services;
 
-namespace ReadReceipt.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class ReceiptController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class ReceiptController : ControllerBase
+    private readonly IReceiptReaderService _receiptReaderService;
+    private readonly ILogger<ReceiptController> _logger;
+
+    public ReceiptController(IReceiptReaderService receiptReaderService, ILogger<ReceiptController> logger)
     {
+        _receiptReaderService = receiptReaderService;
+        _logger = logger;
+    }
 
-        private readonly ILogger<ReceiptController> _logger;
-
-        public ReceiptController(ILogger<ReceiptController> logger)
+    [HttpPost("upload")]
+    public async Task<IActionResult> UploadReceipt(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
         {
-            _logger = logger;
+            return BadRequest("File is empty or not provided.");
+        }
+        if (file.ContentType != "application/json")
+        {
+            return BadRequest("Invalid file type. Please provide a JSON file.");
         }
 
-        [HttpGet]
-        public Receipt Get()
+        string jsonContent;
+        using (var streamReader = new StreamReader(file.OpenReadStream()))
         {
-            var receipt = new Receipt
-            {
-                items = new Item[]
-                {
-                    new Item
-                    {
-                        locale = "en",
-                        description = "Total",
-                        boundingPoly = new Boundingpoly
-                        {
-                            vertices = new Vertex[]
-                            {
-                                new Vertex { x = 0, y = 0 },
-                                new Vertex { x = 0, y = 0 },
-                                new Vertex { x = 0, y = 0 },
-                                new Vertex { x = 0, y = 0 }
-                            }
-                        }
-                    },
-                    new Item
-                    {
-                        locale = "en",
-                        description = "Subtotal",
-                        boundingPoly = new Boundingpoly
-                        {
-                            vertices = new Vertex[]
-                            {
-                                new Vertex { x = 0, y = 0 },
-                                new Vertex { x = 0, y = 0 },
-                                new Vertex { x = 0, y = 0 },
-                                new Vertex { x = 0, y = 0 }
-                            }
-                        }
-                    }
-                }
-            };
-
-            return receipt;
+            jsonContent = await streamReader.ReadToEndAsync();
         }
 
+        var receipt = _receiptReaderService.ProcessReceiptFromJson(jsonContent);
+
+        return Ok(receipt);
     }
 }
