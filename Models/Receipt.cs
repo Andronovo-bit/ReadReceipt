@@ -1,23 +1,20 @@
-﻿
-public class Receipt
+﻿namespace ReadReceipt.Services
 {
-    public Item[] items { get; set; }
-}
+    public class ReturnReceipt
+    {
+        public GroupedItem[] Items { get; set; }
+    }
 
-public class Item
-{
-    public string locale { get; set; }
-    public string description { get; set; }
-    public Boundingpoly boundingPoly { get; set; }
-}
+    public class GroupedItem
+    {
+        public int Line { get; set; }
+        public string Text { get; set; }
+    }
 
-public class Boundingpoly
-{
-    public Vertex[] vertices { get; set; }
-}
-
-public class Vertex
-{
-    public int x { get; set; }
-    public int y { get; set; }
+    public class ReceiptItem
+    {
+        public string Description { get; set; }
+        public double AvgX { get; set; }
+        public double AvgY { get; set; }
+    }
 }
