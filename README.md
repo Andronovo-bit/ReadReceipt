@@ -15,6 +15,27 @@ ReceiptReaderApp is an ASP.NET Core application designed to process receipt JSON
 - Group items by coordinates and generate a formatted receipt.
 - Handle exceptions and log errors for better debugging and monitoring.
 
+## Key Features:
+
+1. **Logging and Error Handling**: 
+    - Uses `ILogger` to log informational messages, errors, and the processing steps.
+    - Handles JSON parsing errors and general exceptions gracefully, providing informative error messages.
+
+2. **Processing Method**:
+    - `ProcessReceiptFromJson(string json)`: Main method that orchestrates the receipt processing, from JSON parsing to returning a structured JSON output of the receipt items.
+
+3. **Core Functional Steps**:
+    - **Parse JSON**:
+        - `ParseJson(string json)`: Parses the input JSON string into a `JArray`.
+    - **Extract Relevant Items**:
+        - `ExtractRelevantItems(JArray items)`: Filters and extracts necessary information (description and coordinates) from each item in the JSON array.
+    - **Calculate Threshold**:
+        - `CalculateThreshold(JArray items)`: Calculates a dynamic threshold based on the average height of bounding polygons in the receipt items, used for grouping items.
+    - **Group Items by Coordinates**:
+        - `GroupItemsByCoordinates(List<ReceiptItem> extractedItems)`: Groups items by their Y-coordinates based on the calculated threshold, ensuring items on the same line are grouped together.
+    - **Create Receipt from Grouped Items**:
+        - `CreateReceiptFromGroupedItems(Dictionary<double, List<ReceiptItem>> groupedItems)`: Converts the grouped items into a structured receipt format suitable for JSON serialization.
+
 ## Getting Started
 
 ### Prerequisites
@@ -105,6 +126,25 @@ curl -X POST "https://localhost:5284/api/receipt/upload-jsonfile" -H "accept: */
     ]
 }
 ```
+## Azure Web App Setup and GitHub Secrets
+
+### Creating an Azure Web App
+
+1. Sign in to the [Azure Portal](https://portal.azure.com/).
+2. From the Azure portal menu, select "Create a resource".
+3. In the "Search the Marketplace" field, type 'Web App' and press enter.
+4. Select "Web App" from the results, then click "Create".
+5. Fill in the details for your web app, such as Subscription, Resource Group, Name, Publish (Code), and Runtime Stack (.NET Core).
+6. Click "Review + create" and then "Create" after verifying your details.
+
+### Configuring GitHub Secrets for Azure Deployment
+
+1. Navigate to your GitHub repository.
+2. Go to "Settings" > "Secrets" > "Actions".
+3. Click on "New repository secret".
+4. Add the following secrets required for Azure deployment:
+   - `AZURE_PUBLISH_PROFILE`: The publish profile XML content. (You can download this from your Azure Web App's "Deployment Center".)
+5. Use these secrets in your `publish.yml` GitHub Action workflow to deploy your application.
 
 ## Contributing
 
