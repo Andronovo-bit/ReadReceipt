@@ -3,6 +3,10 @@
 
 ReceiptReaderApp is an ASP.NET Core application designed to process receipt JSON files or content uploaded by users. The application parses the JSON content, extracts relevant items, groups them by coordinates, and returns a formatted receipt as JSON.
 
+ ### You can try this
+ - Click this link -> https://readreceiptapp.azurewebsites.net/swagger (maybe open slowly you should wait a little first open)
+ - Use [example.json](https://github.com/Andronovo-bit/ReadReceipt/blob/master/example.json) file or content in project files.
+
 ## Features
 
 - Upload JSON files or content containing receipt data.
