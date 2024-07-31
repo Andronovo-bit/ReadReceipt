@@ -1,16 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ReadReceipt.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 public class ReceiptReaderService : IReceiptReaderService
 {
     private readonly ILogger<ReceiptReaderService> _logger;
-    private const double Tolerance = 15;
+    private double threshold = 15;
 
     public ReceiptReaderService(ILogger<ReceiptReaderService> logger)
     {
@@ -26,6 +21,8 @@ public class ReceiptReaderService : IReceiptReaderService
             var items = ParseJson(json);
 
             var extractedItems = ExtractRelevantItems(items);
+
+            CalculateThreshold(items);
 
             var groupedItems = GroupItemsByCoordinates(extractedItems);
 
@@ -69,13 +66,36 @@ public class ReceiptReaderService : IReceiptReaderService
             .ToList();
     }
 
+    private void CalculateThreshold(JArray items)
+    {
+
+        if (items.Count > 0)
+        {
+            double range = 0;
+
+            for (var i = 1; i < items.Count; i++)
+            {
+                double yLow = items[i]["boundingPoly"]["vertices"].Min(v => (int)v["y"]);
+
+                double yHigh = items[i]["boundingPoly"]["vertices"].Max(v => (int)v["y"]);
+
+                // Calculate the height of the bounding polygon and add it to the total range
+                range += yHigh - yLow;
+            }
+
+            // Calculate the average height and set the threshold
+            double avg = Math.Ceiling((range / items.Count) / 2);
+            threshold = avg;
+        }
+    }
+
     private Dictionary<double, List<ReceiptItem>> GroupItemsByCoordinates(List<ReceiptItem> extractedItems)
     {
         var groupedItemsDictionary = new Dictionary<double, List<ReceiptItem>>();
 
         foreach (var item in extractedItems)
         {
-            var key = groupedItemsDictionary.Keys.FirstOrDefault(k => Math.Abs(item.AvgY - k) <= Tolerance);
+            var key = groupedItemsDictionary.Keys.FirstOrDefault(k => Math.Abs(item.AvgY - k) <= threshold);
             if (key != 0)
             {
                 groupedItemsDictionary[key].Add(item);
